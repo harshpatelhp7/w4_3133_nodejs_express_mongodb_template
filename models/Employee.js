@@ -30,6 +30,7 @@ const EmployeeSchema = new mongoose.Schema({
     type: String,
     required: true,
     enum: ["male", "female", "other"],
+    lowercase: true,
   },
   city: {
     type: String,
@@ -45,7 +46,7 @@ const EmployeeSchema = new mongoose.Schema({
     type: Number,
     default: 0.0,
     validate: function (value) {
-      if (Value < 0) {
+      if (value < 0) {
         throw new Error("Salary must be a positive number");
       }
     },
@@ -62,13 +63,33 @@ const EmployeeSchema = new mongoose.Schema({
 });
 
 //Declare Virtual Fields
+EmployeeSchema.virtual("fullName")
+  .get(function () {
+    return `${this.firstname} ${this.lastname}`;
+  })
+  .set(function (value) {
+    console.log(value);
+  });
 
 //Custom Schema Methods
 //1. Instance Method Declaration
+EmployeeSchema.methods.getFullName = function () {
+  return `${this.firstname} ${this.lastname}`;
+};
+
+EmployeeSchema.methods.getFormattedSalary = function () {
+  return `${this.salary}`;
+};
 
 //2. Static method declararion
+EmployeeSchema.static("getEmployeeByFirstName", function (fnm) {
+  return this.find({ firstname: fnm });
+});
 
 //Writing Query Helpers
+EmployeeSchema.query.byFirstName = function (fnm) {
+  return this.where({ firstname: fnm });
+};
 
 EmployeeSchema.pre("save", (next) => {
   console.log("Before Save");
